@@ -8,13 +8,13 @@ unitless='[-]';
 
 %% Gas Properties of Propellant
 propellant_name = 'Nitrogen';
-specific_heat_ratio = 1.67; % 1.4 for Nitrogen = 1.67 for Xenon
-molar_mass = .131293; % .014006 for Nitrogen - 0.131293 for Xenon
+specific_heat_ratio = 1.4; % 1.4 for Nitrogen = 1.67 for Xenon
+molar_mass = .028; % .014006 for Nitrogen - 0.131293 for Xenon
 molar_mass_units = '[kg/mol]';
 
 %% Nozzle Geometry
-exit_radius = .0014160; % radius at nozzle exit
-throat_radius = .001; % radius at nozzle throat
+exit_radius = .014160; % radius at nozzle exit
+throat_radius = .01; % radius at nozzle throat
 length_units = '[m]';
 conical_half_angle = 15; % half angle of conical nozzle, 15 degrees is optimal
 angle_units = '[deg]';
@@ -54,7 +54,7 @@ chamber_pressure_psi_units = '[Psi]';
 %              /-
 %             /
 %     ===\---/          c = chamber
-%     (c) (t)  (e)      t = wthroat
+%     (c) (t)  (e)      t = throat
 %     ===/---\          e = exit
 %             \
 %              \-
@@ -138,7 +138,7 @@ initial_mass_units = '[kg]';
 mass_ratio_units = '[-]';
 system_velocity = standard_gravity*specific_impulse_ve*log(mass_ratio);
 system_velocity_units = '[m/s]';
-burn_time = (propellant_mass*system_delta_velocity)/(thrust);
+burn_time = (propellant_mass*system_delta_velocity)./(thrust);
 burn_time_units = '[s]';
 
 %% format & display outputs
@@ -170,6 +170,7 @@ result =  {'Propellant','',propellant_name;
     'Throat temperature',throat_temperature,temperature_units;
     'Throat pressure',throat_pressure,pressure_units;
     'Mass flow rate',mass_flowrate,mass_flowrate_units;
+    'Throat flowrate',throat_flowrate,mass_flowrate_units;
     linedivider,'','';
     'Exit temperature',exit_temperature,temperature_units;
     'Exit pressure',exit_pressure,pressure_units;
