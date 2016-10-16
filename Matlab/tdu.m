@@ -9,11 +9,13 @@ unitless='[-]';
 %% Gas Properties of Propellant
 propellant_name = 'Nitrogen';
 specific_heat_ratio = 1.4; % 1.4 for Nitrogen = 1.67 for Xenon
-molar_mass = .028012; % .014006 for Nitrogen - 0.131293 for Xenon
+molar_mass = .028012    ; % .014006 for Nitrogen - 0.131293 for Xenon
 molar_mass_units = '[kg/mol]';
+specific_volume = 0.872; 
+specific_volume_units = '[m^3/kg]';
 
 %% Nozzle Geometry
-exit_radius = .014; % radius at nozzle exit - 0.000628315 first order approx.
+exit_radius = .008; % radius at nozzle exit - 0.000628315 first order approx.
 throat_radius = exit_radius*(0.633265)^(1/2); % radius at nozzle throat - 0.0005 first order approx.
 length_units = '[m]';
 conical_half_angle = 15; % half angle of conical nozzle, 15 degrees is optimal
@@ -25,10 +27,8 @@ temperature_units = '[K]';
 pressure_units = '[Pa]';
 
 %% Initial Tank Conditions
-chamber_pressure = 101381; 
+chamber_pressure = (universal_gas_constant*chamber_temperature)/(specific_volume*molar_mass); 
 pressure_units = '[Pa]';
-% theoretical_chamber_pressure = (3*theoretical_propellant_mass*universal_gas_constant*chamber_temperature)/(4*pi*molar_mass*tank_radius^3);
-% theoretical_chamber_pressure_psi = theoretical_chamber_pressure/6895.75729;
 chamber_pressure_psi_units = '[Psi]';
 
 %% Math (the fun part)
