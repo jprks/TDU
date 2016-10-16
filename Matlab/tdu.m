@@ -9,12 +9,12 @@ unitless='[-]';
 %% Gas Properties of Propellant
 propellant_name = 'Nitrogen';
 specific_heat_ratio = 1.4; % 1.4 for Nitrogen = 1.67 for Xenon
-molar_mass = .028; % .014006 for Nitrogen - 0.131293 for Xenon
+molar_mass = .028012; % .014006 for Nitrogen - 0.131293 for Xenon
 molar_mass_units = '[kg/mol]';
 
 %% Nozzle Geometry
-exit_radius = .014160; % radius at nozzle exit
-throat_radius = .01; % radius at nozzle throat
+exit_radius = .014; % radius at nozzle exit - 0.000628315 first order approx.
+throat_radius = exit_radius*(0.633265)^(1/2); % radius at nozzle throat - 0.0005 first order approx.
 length_units = '[m]';
 conical_half_angle = 15; % half angle of conical nozzle, 15 degrees is optimal
 angle_units = '[deg]';
@@ -25,23 +25,8 @@ temperature_units = '[K]';
 pressure_units = '[Pa]';
 
 %% Initial Tank Conditions
-spherical_tank_radius = 0.025;
-length = 0.05; % The length of the tank towards the nozzle
-width = 0.1;
-height = 0.1;
-length_units = '[m]';
-% spherical_tank_volume = 4/3*(pi*tank_radius^3);
-% torus_tank_volume = 1/4*pi^2*(inner radius+outer_radius)*(outer_radius-inner_radius)^2;
-% rectangular_tank_volume = length*width*height;
-tank_volume_units = '[m^3]';
-tank_radius_units = '[m]';
-% Using estimated propellant masses we can calculate a target chamber
-% pressure
-tank_radius = spherical_tank_radius;
-theoretical_propellant_mass = 0.460;
-propellant_mass_units = '[Kg]';
-initial_system_mass = 2.66;
-system_mass_units = '[kg]';
+chamber_pressure = 101381; 
+pressure_units = '[Pa]';
 % theoretical_chamber_pressure = (3*theoretical_propellant_mass*universal_gas_constant*chamber_temperature)/(4*pi*molar_mass*tank_radius^3);
 % theoretical_chamber_pressure_psi = theoretical_chamber_pressure/6895.75729;
 chamber_pressure_psi_units = '[Psi]';
@@ -82,7 +67,8 @@ length_units = '[m]';
 exit_mach = solve_mach(exit_area,throat_area,specific_heat_ratio);
 
 temperature_ratio = 1+((specific_heat_ratio-1)/2)*exit_mach^2;
-pressure_ratio = temperature_ratio^((specific_heat_ratio-1)/specific_heat_ratio);
+pressure_ratio = temperature_ratio^((specific_heat_ratio)/(specific_heat_ratio-1));
+area_ratio = throat_area/exit_area;
 
 exit_temperature = chamber_temperature/temperature_ratio;
 
@@ -93,13 +79,13 @@ velocity_units = '[m/s]';
 
 system_delta_velocity = 122;
 system_delta_velocity_units = '[m/s]';
-specific_impulse_ve = exit_velocity/standard_gravity;
-final_system_mass = initial_system_mass/(exp(system_delta_velocity/(specific_impulse_ve*standard_gravity)));
-propellant_mass = initial_system_mass - final_system_mass;
-mass_ratio = final_system_mass/initial_system_mass; % Dimensionless
-chamber_pressure = (3*propellant_mass*universal_gas_constant*chamber_temperature)/(4*pi*molar_mass*tank_radius^3);
-exit_pressure = chamber_pressure/pressure_ratio;
+final_system_mass = 2.07;
+initial_system_mass = 2.66;
+tank_radius = 0.025;
+tank_radius_units = '[m]';
 
+exit_pressure = chamber_pressure/pressure_ratio;
+propellant_mass_units = '[kg]';
 %% Throat conditions
 
 % We are designing a nozzle that "chokes" the fluid flow at the throat,
@@ -123,9 +109,11 @@ mass_flowrate_units = '[kg/s]';
 %% Thrust and Specific Impulse
 
 thrust = mass_flowrate*exit_velocity + exit_pressure*exit_area;
+specific_impulse = thrust/(mass_flowrate*standard_gravity);
+final_system_mass = initial_system_mass/(exp(system_delta_velocity/(specific_impulse*standard_gravity)));
+propellant_mass = initial_system_mass - final_system_mass;
+mass_ratio = final_system_mass/initial_system_mass; % Dimensionless
 force_units = '[N]';
-specific_impulse_thrust = thrust/(mass_flowrate*standard_gravity);
-%     specific_impulse = exit_velocity/standard_gravity;
 isp_units='[s]';
 
 %% System Calculations
@@ -133,12 +121,10 @@ isp_units='[s]';
 system_velocity = 122;
 initial_mass = 2.66;
 initial_mass_units = '[kg]';
-%     calculated_propellant_mass = initial_mass*(exp(system_velocity/(specific_impulse*standard_gravity)-1));
-%     mass_ratio = exp(system_velocity/(specific_impulse*standard_gravity));
 mass_ratio_units = '[-]';
-system_velocity = standard_gravity*specific_impulse_ve*log(mass_ratio);
+system_velocity = standard_gravity*specific_impulse*log(mass_ratio);
 system_velocity_units = '[m/s]';
-burn_time = (propellant_mass*system_delta_velocity)./(thrust);
+burn_time = (propellant_mass)/(mass_flowrate);
 burn_time_units = '[s]';
 
 %% format & display outputs
@@ -153,16 +139,17 @@ result =  {'Propellant','',propellant_name;
     'Chamber temperature', chamber_temperature, temperature_units;
     'Chamber pressure', chamber_pressure, pressure_units;
 %     'Chamber pressure (Psi)',theoretical_chamber_pressure_psi,chamber_pressure_psi_units;
-%     'Theoretical Chamber Pressure', theoretical_chamber_pressure,chamber_pressure_psi_units;
     'Exit radius', exit_radius, length_units;
     'Throat radius', throat_radius, length_units;
     'Nozzle Length',length,length_units;
     'Half-angle',conical_half_angle, angle_units;
     linedivider,'','';
     'Propellant Mass',propellant_mass,propellant_mass_units;
-    'Theoretical Propellant Mass',theoretical_propellant_mass,propellant_mass_units;
     'Tank Radius',tank_radius,tank_radius_units;
     'Mass Ratio',mass_ratio,mass_ratio_units;
+    'Pressure Ratio',pressure_ratio, unitless;
+    'Temperature Ratio',temperature_ratio,unitless;
+    'Area Ratio',area_ratio,unitless;
     linedivider,'','';
     'Length',length,length_units;
     'Exit area',exit_area,area_units;
@@ -177,8 +164,7 @@ result =  {'Propellant','',propellant_name;
     linedivider,'','';
     'Exhaust velocity',exit_velocity,velocity_units;
     'Thrust',thrust,force_units;
-    'Specific impulse (Ve)',specific_impulse_ve,isp_units;
-    'Specific impulse (Thrust)',specific_impulse_thrust,isp_units
+    'Specific impulse',specific_impulse,isp_units;
     'System Velocity',system_velocity,system_velocity_units;
     'Burn Time',burn_time,burn_time_units;
     linedivider,'','';
